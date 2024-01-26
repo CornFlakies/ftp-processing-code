@@ -10,8 +10,26 @@ class FtpClass:
         self.std  = np.zeros(sample_size)
         self.height_sample = np.zeros(sample_size)
     
-    def unwrap_phase_in_time(self, height):
-        return None
+    def get_wavelength(self, img, conv_factor):
+        from scipy.fft import rfft, rfftfreq
+
+        rows, _ = img.shape
+        center_line = img
+
+        fft_center_line = np.zeros(np.size(center_line, axis=1) // 2 + 1)
+        i = 0 
+        for ctr in center_line:
+            fft_center_line += np.real(rfft(ctr))
+            i += 1
+
+        fft_center_line /= i
+        kspace = rfftfreq(np.size(center_line, axis=1), d=conv_factor)
+        cutoff = 10
+        idx = np.argmax(fft_center_line[cutoff:])
+        p_value = 1/kspace[cutoff:][idx]
+        print(f'from reference image a carrier wavelength of {p_value} cm was extracted ...')
+        
+        return p_value
 
     def run_ftp(self, output_folder, background_folder, reference_folder, input_folder):
         '''
@@ -57,19 +75,21 @@ class FtpClass:
         # Load in the perturbed images
         image_paths, _ = hp.load_images(input_folder)
         frames = len(image_paths)
- 
+        
         #ADD Define experimental params manually
-        L = 75 #cm 
-        D = 38 #cm 
-        p = .312 #cm
+        L = 80 #cm 
+        D = 39 #cm 
+        conv_factor = 0.303 * 1E-1 #cm/px
+        p = self.get_wavelength(ref_img, conv_factor) #cm 
 
         #ADD Define parameters for the processing code
         th = .3
         ns = .7
 
         #ADD Load in first image as reference for the unwrapping algorithm
-        last_img = np.load(image_paths[0])
-        center_idx = tuple([100, 100])
+        last_img = np.load(image_paths[0]) - background_img
+        
+        center_idx = tuple([900, 500])
         
         # Compute the first height and phase map
         last_phase_map = ftp.calculate_phase_diff_map_1D(last_img, ref_img, th, ns)
