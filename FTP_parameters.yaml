@@ -1,13 +1,13 @@
 INPUT:
-  # PROVIDE ABSOLUTE PATH TO RELEVANT FILES, THEY SHOULD BE **NPY** FILES
+  # BOTH A RELATIVE PATH FROM THE .yaml FILE, 
+  # OR AN ABSOLUTE PATH TO RELEVANT FILES CAN BE USED
+  # THEY SHOULD BE **NPY** FILES
   CALIBRATION_IMG_PATH: ../../images/ftp/free_surface_5cm/calibration/
   BACKROUND_IMG_PATH: ../../images/ftp/free_surface_5cm/background/  
   REFERENCE_IMG_PATH: ../../images/ftp/free_surface_5cm/reference/
   INPUT_IMG_PATH: ../../images/ftp/free_surface_5cm/forcing-5mm/
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
-  # CODE CHECKS IF THE PROVIDED DIRECTORY EXISTS AND CONTAINS FILES, IF SO, IT ABORTS 
-  # (I do this because my dumb ass sometimes overwrites important output files)
   OUTPUT_PATH: ../../results/ftp/
 PARAMETERS:
   # PROVIDE IN **CM** PLEASE
