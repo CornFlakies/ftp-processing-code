@@ -181,6 +181,13 @@ class HelperFunctions:
             print(Warning(f'Directory {output_folder} already exists, but does not contain files, so nothing will get overwritten, continuing ..'))
 
     @staticmethod
+    def gen_path(cur_dir, path):
+        if not os.path.abspath(path):
+            return os.path.join(cur_dir, path)
+        else:
+            return path
+
+    @staticmethod
     def print(message, mode = 'n'):
         '''
         Helper function used to have more control over the print messages

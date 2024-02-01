@@ -27,9 +27,6 @@ def detect_and_read_qr(gray, plot=False):
 
     # Detect and decode the QR code
     decoded_string, points, array = qr_detector.detectAndDecode(gray)
-    
-    print(decoded_string)
-    print('jo')
 
     # Split the string into key-value pairs
     pairs = [item.strip() for item in decoded_string.split(",")]
@@ -86,15 +83,13 @@ def compute_distances_between_points(corners):
 
 def calculate_conversion_factor(image, plot=False):
 
-    # Load image
-    #gray = load_image_to_grayscale(imagefile)
-    print(image.max())
-    _, gray = cv2.threshold(image, 300, 255, cv2.THRESH_BINARY)
-    gray = gray.astype(np.uint8)
-
+    image = (image / image.max() * 255).astype(np.uint8)
+    _, gray = cv2.threshold(image, 75, 255, cv2.THRESH_BINARY)
+    
     # Detect and read QR code info
     qrdata = detect_and_read_qr(gray, plot=plot)
-    
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
     # Get the number of squares in the checkerboard
     # (assuming the checkerboard is a square)
     num_squares = int(qrdata["num_squares"])
@@ -103,7 +98,7 @@ def calculate_conversion_factor(image, plot=False):
 
     # Find the chessboard corners in the image
     ret, corners = cv2.findChessboardCorners(gray, internal_corners_shape, None)
-    
+
     # If corners are indeed found, continue
     if ret:
         # Reshape the corners output for convenience.
@@ -126,10 +121,9 @@ def calculate_conversion_factor(image, plot=False):
             plt.plot(corners[:, 0], corners[:, 1], "ro")
             for i in range(corners.shape[0]):
                 plt.annotate(str(i), (corners[i, 0], corners[i, 1]), color="r")
+        return dists, mm_per_px
     else:
-        print("Error: checkerboard not found in the image.")
-
-    return dists, mm_per_px
+        raise Exception("Error: checkerboard not found in the image.")
 
 if __name__=='__main__': 
     import argparse

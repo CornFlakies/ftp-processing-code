@@ -1,10 +1,15 @@
-import os
-import ftp
 import numpy as np
-import conversion_factor as cf
+import os
+import matplotlib.pyplot as plt 
+import ftp
 from helper_functions import HelperFunctions as hp
 
 class FtpClass:
+    def __init__(self, sample_size = 30):
+        self.mean = np.zeros(sample_size)
+        self.std  = np.zeros(sample_size)
+        self.height_sample = np.zeros(sample_size)
+    
     def get_wavelength(self, img, conv_factor):
         from scipy.fft import rfft, rfftfreq
 
@@ -26,10 +31,9 @@ class FtpClass:
         
         return p_value
 
-    def run_ftp(self, yaml_file):
+    def run_ftp(self, output_folder, background_folder, reference_folder, input_folder):
         '''
-        Inputs:
-        - calibration_folder : folder with a calibration image, using the qr code thingy
+        Inputs: 
         - output_folder     : folder where the computed height profiles will be stored
         - background_folder : folder containing background images of the interrogation window
         - reference_folder  : image containing the undisturbed profile of the projection
@@ -37,24 +41,20 @@ class FtpClass:
 
         Outputs:
         - output folders containing the phase maps and height maps of all the measured data
-        '''
-
-        # Unpack yaml parameters
-        cur_dir = os.path.dirname(__file__)
-        calibration_folder  = hp.gen_path(cur_dir, yaml_file['INPUT']['CALIBRATION_IMG_PATH'])
-        background_folder   = hp.gen_path(cur_dir, yaml_file['INPUT']['BACKROUND_IMG_PATH'])
-        reference_folder    = hp.gen_path(cur_dir, yaml_file['INPUT']['REFERENCE_IMG_PATH'])
-        input_folder        = hp.gen_path(cur_dir, yaml_file['INPUT']['INPUT_IMG_PATH'])
-        output_folder       = hp.gen_path(cur_dir, yaml_file['OUTPUT']['OUTPUT_PATH'])
-        
-        D = yaml_file['PARAMETERS']['DIST_PROJCAM'] #39 cm 
-        L = yaml_file['PARAMETERS']['DIST_CAM_FS'] #80 cm 
+        '''        
+        # Create general output folder
+        hp.create_output_folder(output_folder)
         
         # Create directory for height maps
         dir_height_maps = 'height_maps'
         path_dir_height_maps = os.path.join(output_folder, dir_height_maps, '')
         hp.create_output_folder(path_dir_height_maps)
 
+    #    # Create directory for phase maps
+    #    dir_phase_maps = 'phase_maps'
+    #    path_dir_phase_maps = os.path.join(output_folder, dir_phase_maps, '')
+    #    hp.create_output_folder(path_dir_phase_maps)
+        
         # Creating a background image by averaging a few frames from the background
         print('generating background image ...')
         image_paths, _ = hp.load_images(background_folder)
@@ -71,27 +71,22 @@ class FtpClass:
             reference_img += np.load(image)
         reference_img /= len(image_paths)
         ref_img = reference_img - background_img
-        calib_paths, _ = hp.load_images(calibration_folder)
-        
-        img = np.load(calib_paths[0])
-        _, conv_factor = cf.calculate_conversion_factor(img)
-        print("Conversion factor: mm/px = {factor}".format(factor=conv_factor))
-        
-        conv_factor *= 1E-1 #to centimeters
-        p = self.get_wavelength(ref_img, conv_factor) #cm 
-        
-        # Create general output folder
-        hp.create_output_folder(output_folder)        
 
         # Load in the perturbed images
         image_paths, _ = hp.load_images(input_folder)
         frames = len(image_paths)
         
-        # Define parameters for the processing code
+        #ADD Define experimental params manually
+        L = 80 #cm 
+        D = 39 #cm 
+        conv_factor = 0.303 * 1E-1 #cm/px
+        p = self.get_wavelength(ref_img, conv_factor) #cm 
+
+        #ADD Define parameters for the processing code
         th = .3
         ns = .7
 
-        # Load in first image as reference for the unwrapping algorithm
+        #ADD Load in first image as reference for the unwrapping algorithm
         last_img = np.load(image_paths[0]) - background_img
         
         center_idx = tuple([900, 500])
@@ -105,6 +100,10 @@ class FtpClass:
         path = os.path.join(path_dir_height_maps, filename)
         np.save(path, height_map)
 
+    #    filename = 'phase_map_' + str(1).zfill(10) + '.npy'
+    #    path = os.path.join(path_dir_phase_maps, filename)
+    #    np.save(path, last_phase_map)
+        
         # Run through the rest of the images
         for i, image in enumerate(image_paths[1:]):
             # Loading image and finding phase map
@@ -124,6 +123,10 @@ class FtpClass:
             path = os.path.join(path_dir_height_maps, filename)
             np.save(path, height_map)
 
+    #        filename = 'phase_map_' + str(i + 2).zfill(10) + '.npy'
+    #        path = os.path.join(path_dir_phase_maps, filename)
+    #        np.save(path, new_phase_map)
+             
             # Setting the last phase map as the new one
             last_phase_map = new_phase_map
             

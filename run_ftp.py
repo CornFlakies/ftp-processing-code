@@ -1,3 +1,4 @@
+import yaml
 import argparse
 from ftp_class import FtpClass
 
@@ -7,13 +8,13 @@ if __name__ == '__main__':
     with the relevant directories and stuff and then run it
     '''
 
-    # Load in image paths
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argparser.add_argument('output_folder', type=str)
-    argparser.add_argument('background_folder', type=str)
-    argparser.add_argument('reference_folder', type=str)
-    argparser.add_argument('input_folder', type=str)
-    args = argparser.parse_args() 
+    argparser.add_argument('yaml_file', type=str)
+    args = argparser.parse_args()
 
+    param = yaml.load(
+                    open(args.yaml_file), Loader=yaml.FullLoader
+    )
+    
     ftpclass = FtpClass()
-    ftpclass.run_ftp(args.output_folder, args.background_folder, args.reference_folder, args.input_folder)
+    ftpclass.run_ftp(param)
