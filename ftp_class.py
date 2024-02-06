@@ -7,8 +7,6 @@ from helper_functions import HelperFunctions as hp
 class FtpClass:
     def get_wavelength(self, img, conv_factor):
         from scipy.fft import rfft, rfftfreq
-
-        rows, _ = img.shape
         center_line = img
 
         fft_center_line = np.zeros(np.size(center_line, axis=1) // 2 + 1)
@@ -47,8 +45,11 @@ class FtpClass:
         input_folder        = hp.gen_path(cur_dir, yaml_file['INPUT']['INPUT_IMG_PATH'])
         output_folder       = hp.gen_path(cur_dir, yaml_file['OUTPUT']['OUTPUT_PATH'])
         
-        D = yaml_file['PARAMETERS']['DIST_PROJCAM'] #39 cm 
-        L = yaml_file['PARAMETERS']['DIST_CAM_FS'] #80 cm 
+        first_img_idx = int(yaml_file['PROCESSING']['FIRST_IMG'])          
+        last_img_idx  = int(yaml_file['PROCESSING']['LAST_IMG'])
+
+        D = float(yaml_file['PARAMETERS']['DIST_PROJCAM']) #39 cm 
+        L = float(yaml_file['PARAMETERS']['DIST_CAM_FS']) #80 cm 
         
         # Create directory for height maps
         dir_height_maps = 'height_maps'
@@ -72,7 +73,8 @@ class FtpClass:
         reference_img /= len(image_paths)
         ref_img = reference_img - background_img
         calib_paths, _ = hp.load_images(calibration_folder)
-        
+       
+        # Load in the calibration image, just the first one
         img = np.load(calib_paths[0])
         _, conv_factor = cf.calculate_conversion_factor(img)
         print("Conversion factor: mm/px = {factor}".format(factor=conv_factor))
@@ -80,21 +82,29 @@ class FtpClass:
         conv_factor *= 1E-1 #to centimeters
         p = self.get_wavelength(ref_img, conv_factor) #cm 
         
-        # Create general output folder
+        # Create output folder for the height_maps
         hp.create_output_folder(output_folder)        
 
         # Load in the perturbed images
-        image_paths, _ = hp.load_images(input_folder)
-        frames = len(image_paths)
-        
-        # Define parameters for the processing code
+        image_paths, image_names = hp.load_images(input_folder)
+
+        if ((last_img_idx >= 0) & (last_img_idx > len(image_paths))): 
+            print(Warning('Supplied last image index is larger than the provided dataset ...\n running through the whole dataset ..'))
+            last_img_idx = len(image_paths)
+            print(f'running from images {image_names[first_img_idx]} to {image_names[last_img_idx]} ...')
+        else:
+            print(f'running from images {image_names[first_img_idx]} to {image_names[last_img_idx - 1]} ...')
+        frames = len(image_names[first_img_idx:last_img_idx])
+
+        #ADD Define the filtering parameters for the processing code
         th = .3
         ns = .7
 
         # Load in first image as reference for the unwrapping algorithm
-        last_img = np.load(image_paths[0]) - background_img
-        
-        center_idx = tuple([900, 500])
+        last_img = np.load(image_paths[first_img_idx]) - background_img
+       
+        #ADD Select pixel to unwrap the phase in time
+        center_idx = tuple([0, 500])
         
         # Compute the first height and phase map
         last_phase_map = ftp.calculate_phase_diff_map_1D(last_img, ref_img, th, ns)
@@ -106,7 +116,7 @@ class FtpClass:
         np.save(path, height_map)
 
         # Run through the rest of the images
-        for i, image in enumerate(image_paths[1:]):
+        for i, image in enumerate(image_paths[first_img_idx + 1:last_img_idx]):
             # Loading image and finding phase map
             img = np.load(image) - background_img
             new_phase_map = ftp.calculate_phase_diff_map_1D(img, ref_img, th, ns)

@@ -9,6 +9,9 @@ INPUT:
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
   OUTPUT_PATH: ../../results/ftp/
+PROCESSING:
+  FIRST_IMG: 0
+  LAST_IMG: -1 # Set to -1 to load the entire dir
 PARAMETERS:
   # PROVIDE IN **CM** PLEASE
   DIST_PROJCAM: 80 # distance between projector and camera
