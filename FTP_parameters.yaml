@@ -2,17 +2,25 @@ INPUT:
   # BOTH A RELATIVE PATH FROM THE .yaml FILE, 
   # OR AN ABSOLUTE PATH TO RELEVANT FILES CAN BE USED
   # THEY SHOULD BE **NPY** FILES
-  CALIBRATION_IMG_PATH: ../../images/ftp/free_surface_5cm/calibration/
-  BACKROUND_IMG_PATH: ../../images/ftp/free_surface_5cm/background/  
-  REFERENCE_IMG_PATH: ../../images/ftp/free_surface_5cm/reference/
-  INPUT_IMG_PATH: ../../images/ftp/free_surface_5cm/forcing-5mm/
+  CALIBRATION_IMG_PATH: ../../images/ftp/fs5cm/calibration/
+  BACKROUND_IMG_PATH: ../../images/ftp/fs5cm/background/  
+  REFERENCE_IMG_PATH: ../../images/ftp/fs5cm/reference/
+  INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-20mm/
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
-  OUTPUT_PATH: ../../results/ftp/
+  OUTPUT_PATH: ../../results/ftp/test/
 PROCESSING:
   FIRST_IMG: 0
   LAST_IMG: -1 # Set to -1 to load the entire dir
 PARAMETERS:
-  # PROVIDE IN **CM** PLEASE
-  DIST_PROJCAM: 80 # distance between projector and camera
-  DIST_CAM_FS: 39 # distance between camera and the free surface
+  SETUP:
+    # PROVIDE IN **CM** PLEASE
+    DIST_PROJCAM: 80 # distance between projector and camera
+    DIST_CAM_FS: 39 # distance between camera and the free surface
+  FILTERING: # Using a tukey window
+    WINDOW_SIZE: 0.5
+    WINDOW_TAPER: 0.3
+    # WINDOW_SIZE represent a factor which is multiplied 
+    # by the carrier peak index (larger window for further distance from the origin.)
+    # WINDOW_TAPER is value between 0 and 1, and determines how strongly the window is wrapped by the cosine
+    # If the value is 1, it becomes a hann window, if the value is 0, it becomes square.

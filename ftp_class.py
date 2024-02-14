@@ -48,9 +48,11 @@ class FtpClass:
         first_img_idx = int(yaml_file['PROCESSING']['FIRST_IMG'])          
         last_img_idx  = int(yaml_file['PROCESSING']['LAST_IMG'])
 
-        D = float(yaml_file['PARAMETERS']['DIST_PROJCAM']) #39 cm 
-        L = float(yaml_file['PARAMETERS']['DIST_CAM_FS']) #80 cm 
-        
+        D = float(yaml_file['PARAMETERS']['SETUP']['DIST_PROJCAM']) #39 cm 
+        L = float(yaml_file['PARAMETERS']['SETUP']['DIST_CAM_FS']) #80 cm 
+        th = float(yaml_file['PARAMETERS']['FILTERING']['WINDOW_SIZE'])
+        ns = float(yaml_file['PARAMETERS']['FILTERING']['WINDOW_TAPER'])
+
         # Create directory for height maps
         dir_height_maps = 'height_maps'
         path_dir_height_maps = os.path.join(output_folder, dir_height_maps, '')
@@ -95,10 +97,6 @@ class FtpClass:
         else:
             print(f'running from images {image_names[first_img_idx]} to {image_names[last_img_idx - 1]} ...')
         frames = len(image_names[first_img_idx:last_img_idx])
-
-        #ADD Define the filtering parameters for the processing code
-        th = .3
-        ns = .7
 
         # Load in first image as reference for the unwrapping algorithm
         last_img = np.load(image_paths[first_img_idx]) - background_img

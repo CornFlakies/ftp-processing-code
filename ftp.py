@@ -2,6 +2,7 @@ import numpy as np
 import numpy.ma as ma
 from scipy import signal
 from skimage.restoration import unwrap_phase as unwrap
+import matplotlib.pyplot as plt
 
 def calculate_phase_diff_map_1D(dY, dY0, th, ns, mask_for_unwrapping=None):
     """
@@ -20,8 +21,14 @@ def calculate_phase_diff_map_1D(dY, dY0, th, ns, mask_for_unwrapping=None):
     ny, nx = np.shape(dY)
     phase0 = np.zeros([nx, ny])
     phase = np.zeros([nx, ny])
+
+    #plt.figure()
+    #plt.imshow(dY0)
+    #plt.figure()
+    #plt.imshow(dY)
+    #plt.show()
     
-    for lin in range(0, nx):
+    for lin in range(nx//2, nx):
         fY0 = np.fft.fft(dY0[lin, :])
         fY = np.fft.fft(dY[lin, :])
         
@@ -30,17 +37,26 @@ def calculate_phase_diff_map_1D(dY, dY0, th, ns, mask_for_unwrapping=None):
 
         imax = np.argmax(np.abs(fY0[9 : int(np.floor(nx / 2))]))
         ifmax = imax + 9
-       
+      
         HW = np.round(ifmax * th)
         W = 2 * HW
         win = signal.windows.tukey(int(W), ns)
 
-        gaussfilt1D = np.zeros([1, nx])
-        gaussfilt1D[0, int(ifmax - HW - 1) : int(ifmax - HW + W - 1)] = win
+        gaussfilt1D = np.zeros(nx)
+        gaussfilt1D[int(ifmax - HW - 1) : int(ifmax - HW + W - 1)] = win
+        gaussfiltAxis = np.arange(0, nx, 1)
 
         # Multiplication by the filter
         Nfy0 = fY0 * gaussfilt1D
         Nfy = fY * gaussfilt1D
+
+        #plt.plot(gaussfilt1D)
+        plt.plot(gaussfilt1D[9:] * 5000)
+        plt.plot(np.abs(fY0[9:]))
+        plt.plot(np.abs(fY[9:]))
+        plt.figure()
+        plt.plot(np.abs(Nfy))
+        plt.show()
   
         # Inverse Fourier transform of both images
         Ny0 = np.fft.ifft(Nfy0)
