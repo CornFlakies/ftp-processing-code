@@ -8,7 +8,7 @@ INPUT:
   INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-10mm/
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
-  OUTPUT_PATH: ../../results/ftp/forcing-10mm/height_maps/
+  OUTPUT_PATH: ../../results/ftp/forcing-10mm/
 PROCESSING:
   FIRST_IMG: 0
   LAST_IMG: -1 # Set to -1 to load the entire dir

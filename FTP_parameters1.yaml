@@ -5,10 +5,10 @@ INPUT:
   CALIBRATION_IMG_PATH: ../../images/ftp/fs5cm/calibration/
   BACKROUND_IMG_PATH: ../../images/ftp/fs5cm/background/  
   REFERENCE_IMG_PATH: ../../images/ftp/fs5cm/reference/
-  INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-10mm/
+  INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-5mm/
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
-  OUTPUT_PATH: ../../results/ftp/forcing-10mm/height_maps/
+  OUTPUT_PATH: ../../results/ftp/forcing-5mm/
 PROCESSING:
   FIRST_IMG: 0
   LAST_IMG: -1 # Set to -1 to load the entire dir
