@@ -1,7 +1,9 @@
 import os
 import ftp
-import numpy as np
+import numpy as np 
+import skimage as sk
 import conversion_factor as cf
+import matplotlib.pyplot as plt
 from helper_functions import HelperFunctions as hp
 
 class FtpClass:
@@ -43,6 +45,7 @@ class FtpClass:
         background_folder   = hp.gen_path(cur_dir, yaml_file['INPUT']['BACKROUND_IMG_PATH'])
         reference_folder    = hp.gen_path(cur_dir, yaml_file['INPUT']['REFERENCE_IMG_PATH'])
         input_folder        = hp.gen_path(cur_dir, yaml_file['INPUT']['INPUT_IMG_PATH'])
+        image_mask_folder   = hp.gen_path(cur_dir, yaml_file['INPUT']['IMG_MASK_PATH'])
         output_folder       = hp.gen_path(cur_dir, yaml_file['OUTPUT']['OUTPUT_PATH'])
         
         first_img_idx = int(yaml_file['PROCESSING']['FIRST_IMG'])          
@@ -57,6 +60,10 @@ class FtpClass:
         dir_height_maps = 'height_maps'
         path_dir_height_maps = os.path.join(output_folder, dir_height_maps, '')
         hp.create_output_folder(path_dir_height_maps)
+
+        # Load image mask files
+        if image_mask_folder is not None:
+            image_mask_files, _ = hp.load_images(image_mask_folder, header='tiff')
 
         # Creating a background image by averaging a few frames from the background
         print('generating background image ...')
@@ -119,7 +126,18 @@ class FtpClass:
         np.save(path, height_map)
 
         # Run through the rest of the images
-        for i, image in enumerate(image_paths[first_img_idx + 1:last_img_idx]):
+        for i, image in enumerate(image_paths[first_img_idx:last_img_idx]):
+            # Loading mask, if provided
+            if image_mask_folder is not None:
+                mask = sk.io.imread(image_mask_files[i])
+                plt.figure()
+                plt.imshow(mask)
+                mask[np.argwhere(mask == 0)] = 1 
+                plt.figure()
+                plt.imshow(mask)
+                plt.show()
+                
+
             # Loading image and finding phase map
             img = np.load(image) - background_img
             new_phase_map = ftp.calculate_phase_diff_map_1D(img, ref_img, th, ns)

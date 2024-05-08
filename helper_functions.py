@@ -17,21 +17,20 @@ class Chunks:
 
 class HelperFunctions:
     @staticmethod
-    def process_2d_fft(surface_profile, window = None):
+    def process_2d_fft(surface_profile, window = None): 
         # Subtract the mean
         surface_profile -= np.mean(surface_profile)
         
         # Apply a window
         if window is not None:
             surface_profile *= window        
-
+        
         # Do the fourier transformed
-        #ADD discarding phase information for now
-        img_fft = fft2(surface_profile)
+        img_fft = np.abs(fft2(surface_profile))
         
         # Shift the k-space to set the origin in the center
-        img_fft = np.abs(fftshift(img_fft))
-
+        img_fft = fftshift(img_fft)
+        
         return img_fft
 
     @staticmethod
@@ -42,17 +41,16 @@ class HelperFunctions:
         '''
         # Filter signal
         fft_profile -= np.mean(fft_profile)
-    
+        
         # Create dataset which is multiplied by a Hann window and fourier transform
         fft_profile = fft_profile.astype(np.float64)
         if window is not None:
-            fft_profile *= window
-   
+            fft_profile *= window 
+    
         # Do the fourier transform
-        #ADD discarding phase information for now
-        img_fft = np.abs(rfft(fft_profile))
-        
-        return img_fft 
+        img_fft = np.abs(rfft(fft_profile)) 
+         
+        return img_fft
 
     @staticmethod
     def process_temporal_fft(surface_profile, window = None): 
@@ -78,15 +76,15 @@ class HelperFunctions:
         surface_profile -= np.mean(surface_profile)
 
         # Do welch transform
-        surface_profile, freq = welch(surface_profile, fs)
+        freq, surface_profile = welch(surface_profile, fs, nperseg=512)
 
-        return surface_profile, freq
+        return freq, surface_profile
 
     @staticmethod
     def gen_synthetic_img(img):
         '''
         Generate a synthetic image to prepare for the 2d spatial fourier transform
-        the synthetic image adds copies of the provided image with a padding one fourth the image size
+        the synthetic image adds copies of the provided image with a padding one fourth the qmage size
         '''
         img_size = np.size(img, axis=0)
         synth_size = int(1.5 * img_size)
@@ -122,14 +120,23 @@ class HelperFunctions:
         
         return synth_img
 
+
+    @staticmethod 
+    def grav_dispersion_sq(k, h0, g = 9.81):
+        return g * k * np.tanh(k * h0)
+
     @staticmethod
-    def gravcap_dispersion_sq(k, h0, rho = 988, g = 9.81, gamma = 7.28E-2):
+    def cap_dispersion_sq(k, h0, gamma = 7.18E-2, rho = 998):
+        return gamma * k**3 / rho * np.tanh(k * h0)
+
+    @staticmethod
+    def gravcap_dispersion_sq(k, h0, rho = 998, g = 9.81, gamma = 0.07):
         '''
-        Returns omega**2 associated with provided k-values, and according to 
-        the gravity capillary dispersion relation
+        Returns omega**2 associated with provided k-values, according to 
+        the complete gravity capillary dispersion relation
         '''
         return g * k * np.tanh(k * h0) * (1 + gamma * k**2 / (rho * g))
-
+    
     @staticmethod
     def crop_image(img, nx1, nx2, ny1, ny2):
         return img[nx1:nx2, ny1:ny2]
@@ -143,7 +150,11 @@ class HelperFunctions:
         elif shape[1] > shape[0]:
             return img[:, croplen:-croplen]
         else:
-            raise Exception('image is already square') 
+            return img 
+
+    @staticmethod
+    def load_folders(input_folder):
+        return [x[0] for x in os.walk(input_folder)][1:]
 
     @staticmethod
     def load_images(input_folder, header='npy'):
@@ -179,14 +190,7 @@ class HelperFunctions:
             raise Exception(f'Directory {output_folder} already exists, and contains files, check that you do not overwrite anything!')
         else:
             print(Warning(f'Directory {output_folder} already exists, but does not contain files, so nothing will get overwritten, continuing ..'))
-
-    @staticmethod
-    def gen_path(cur_dir, path):
-        if not os.path.abspath(path):
-            return os.path.join(cur_dir, path)
-        else:
-            return path
-
+        
     @staticmethod
     def print(message, mode = 'n'):
         '''

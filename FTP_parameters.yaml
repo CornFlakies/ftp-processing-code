@@ -1,16 +1,16 @@
 INPUT:
-  # BOTH A RELATIVE PATH FROM THE .yaml FILE, 
-  # OR AN ABSOLUTE PATH TO RELEVANT FILES CAN BE USED
+  # A RELATIVE PATH FROM THE .yaml FILE SHOULD BE GIVEN 
   # THEY SHOULD BE **NPY** FILES
   CALIBRATION_IMG_PATH: ../../images/ftp/fs5cm/calibration/
   BACKROUND_IMG_PATH: ../../images/ftp/fs5cm/background/  
   REFERENCE_IMG_PATH: ../../images/ftp/fs5cm/reference/
-  INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-10mm/
+  INPUT_IMG_PATH: ../../images/ftp/fs5cm/forcing-15mm-particles1/
+  IMG_MASK_PATH: ../../images/ftp/fs5cm/forcing-15mm-particles1/filtered/ 
 OUTPUT:
   # CODE CREATES A 'height_maps' DIRECTORY
-  OUTPUT_PATH: ../../results/ftp/forcing-10mm/height_maps/
+  OUTPUT_PATH: ../../results/ftp/measurements_january2/forcing-15mm-particles1/
 PROCESSING:
-  FIRST_IMG: 0
+  FIRST_IMG: 90
   LAST_IMG: -1 # Set to -1 to load the entire dir
 PARAMETERS:
   SETUP:

@@ -4,8 +4,7 @@ from ftp_class import FtpClass
 
 if __name__ == '__main__':
     '''
-    If you run this from Spyder you should replace the add_arguments things in argparse
-    with the relevant directories and stuff and then run it
+    If you run this from Spyder you should just directly input the yaml_file path
     '''
 
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
